@@ -18,6 +18,7 @@ class ProducerResource(
         val queue = hazelcastInstance.getQueue<SmsMessage>("sms-queue")
         val counter = hazelcastInstance.cpSubsystem.getAtomicLong("sms-counter")
         val id = counter.incrementAndGet().toString()
+        println("Generated ID: $id")
         val sms = SmsMessage(
             id = id,
             recipient = "1234567890",

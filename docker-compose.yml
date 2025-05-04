@@ -11,13 +11,36 @@ services:
     environment:
         HZ_CLUSTERNAME: hazelcast
 
-  producer:
+  loadbalancer:
+    image: nginx:latest
+    container_name: loadbalancer
+    ports:
+      - "8088:80"
+    networks:
+      - hazelcast-net
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+  producer1:
     build:
       context: ./producer-service
       dockerfile: src/main/docker/Dockerfile.jvm
-    container_name: producer
+    container_name: producer1
     ports:
       - "8080:8080"
+    networks:
+      - hazelcast-net
+    environment:
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_MEMBERS: hazelcast:5701
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_NAME: hazelcast
+
+  producer2:
+    build:
+      context: ./producer-service
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: producer2
+    ports:
+      - "8081:8080"
     networks:
       - hazelcast-net
     environment:
@@ -30,7 +53,7 @@ services:
       dockerfile: src/main/docker/Dockerfile.jvm
     container_name: consumer1
     ports:
-      - "8081:8080"
+      - "8082:8080"
     networks:
       - hazelcast-net
     environment:
@@ -43,7 +66,7 @@ services:
       dockerfile: src/main/docker/Dockerfile.jvm
     container_name: consumer2
     ports:
-      - "8082:8080"
+      - "8083:8080"
     networks:
       - hazelcast-net
     environment:
