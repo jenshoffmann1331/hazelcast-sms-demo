@@ -8,7 +8,7 @@ Dieses Projekt demonstriert einen verteilten SMS-Versand mit Hazelcast als Share
 - **Consumer-Service** (Quarkus/Kotlin): Liest regelmäßig aus der Queue und versendet die SMS über SMPP (mit der Bibliothek [jSMPP](https://jsmpp.org/)).
 - **Hazelcast**: In-Memory-Datenstruktur, teilt die Queue zwischen Producer und allen Consumer-Instanzen.
 - **SMPP-Simulator**: Lokaler SMSC-Simulator zur Entwicklung und zum Testen des SMPP-Protokolls.
-
+- **nginx**: Einfacher Load-Balancer, der eingehende Requests auf mehrere Producer-Instanzen verteilt.
 ## Starten mit Docker Compose
 
 ### Voraussetzungen
@@ -27,8 +27,16 @@ Dieses Skript:
 1. Baut Producer- und Consumer-Services (als `fast-jar`)
 2. Startet Container inkl. Hazelcast und SMPP-Simulator
 
+### Testen des Endpunkts
+
 Der Versand einer SMS-Nachricht kann dann über den REST-Endpunkt des Producer-Services getestet werden:
 
 ```bash
-curl -X POST http://localhost:8080/producer
+curl -X POST http://localhost:8088/producer
+```
+
+Oder, um etwas Last zu erzeugen und den Load-Balancer zu testen:
+
+```bash
+while true; do curl -X POST http://localhost:8088/producer; echo; done
 ```
