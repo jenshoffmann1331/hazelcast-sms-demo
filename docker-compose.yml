@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  hazelcast:
+    image: hazelcast/hazelcast:5.2.1
+    container_name: hazelcast
+    ports:
+      - "5701:5701"
+    networks:
+      - hazelcast-net
+    environment:
+        HZ_CLUSTERNAME: hazelcast
+
+  producer:
+    build:
+      context: ./producer-service
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: producer
+    ports:
+      - "8080:8080"
+    networks:
+      - hazelcast-net
+    environment:
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_MEMBERS: hazelcast:5701
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_NAME: hazelcast
+
+  consumer1:
+    build:
+      context: ./consumer-service
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: consumer1
+    ports:
+      - "8081:8080"
+    networks:
+      - hazelcast-net
+    environment:
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_MEMBERS: hazelcast:5701
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_NAME: hazelcast
+
+  consumer2:
+    build:
+      context: ./consumer-service
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: consumer2
+    ports:
+      - "8082:8080"
+    networks:
+      - hazelcast-net
+    environment:
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_MEMBERS: hazelcast:5701
+      QUARKUS_HAZELCAST_CLIENT_CLUSTER_NAME: hazelcast
+
+  smppsim:
+    image: bitsensedev/smpp-sim
+    container_name: smppsim
+    ports:
+      - "2775:2775"
+    networks:
+      - hazelcast-net
+    volumes:
+      - ./smppsim.props:/smppsim/conf/smppsim.props
+
+networks:
+  hazelcast-net:
+    driver: bridge
